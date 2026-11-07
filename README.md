@@ -18,7 +18,9 @@ python3 tools/verify_sources.py --file reports/<case-id>.md
 
 The standalone text client in `tools/model_provider.py` can also check an OpenAI-compatible endpoint. Set `DEBATE_ARENA_BASE_URL` and `DEBATE_ARENA_MODEL`, add `DEBATE_ARENA_API_KEY` only if the endpoint requires it, then run `python3 tools/model_provider.py "Reply with one sentence."`. This client does not run the Discord debate workflow; see [provider limits](docs/PROVIDERS.md).
 
-To run the full Discord workflow, also install Switch Console, set up a supported agent provider, connect a Discord bot/room, and create the agents from the template. Switch itself does not include a model, and a full case requires a running provider. The `codex` setting in the checked template is the provider used for our live run; change each agent to a provider installed in your Switch Console if needed. A local model can avoid a model API subscription when the selected provider supports it, but still needs compatible software and hardware. See [provider setup and limits](docs/PROVIDERS.md).
+To run the full Discord workflow, install Switch Console, connect a Discord bot/room, and create the agents from a template. The verified template uses Codex. For model choice through OpenCode, install OpenCode and its Switch connector, then import `switch/templates/debate-arena-opencode.template.yaml` and configure your model in OpenCode. A local model can avoid per-request API fees when a compatible server and sufficient hardware are available. The OpenCode template has not yet been verified in the team Discord room. See [provider setup and limits](docs/PROVIDERS.md).
+
+For the example local setup, install Ollama, run `ollama pull gemma3:4b`, copy `switch/opencode.local.example.jsonc` to `~/.config/opencode/opencode.json`, then use the OpenCode template. This requires no model API key, but the model runs on your own hardware. Run the handoff and complete-case checks in the provider guide before relying on it.
 
 ## Existing Discord setup
 
