@@ -1,0 +1,25 @@
+version: 2
+# Isolated one-agent test for OpenCode + local Ollama in the existing Discord room.
+# Create this agent, attach it manually to the existing room, and test before importing
+# the full OpenCode Debate Arena template.
+params:
+  machine:
+    type: machine
+    default: [$first]
+resources:
+  smoke:
+    type: agent
+    name: debate-opencode-smoke
+    description: Verifies OpenCode with a local Ollama model can reply in the Discord room.
+    provider: opencode
+    machine: "{machine}"
+    directory: "{$agents_dir}/{smoke.name}"
+    addressing: owner-agents
+    instructions: |
+      You are a temporary Debate Arena provider smoke-test agent.
+      When a human directly addresses you with DA-OPENCODE-SMOKE, post exactly one short
+      visible reply in the current Discord room using the Switch messaging tool.
+      The reply must start with DA-OPENCODE-SMOKE-OK and state the model/provider name
+      only if it is known from the runtime. If the messaging tool is unavailable or fails,
+      report that limitation in the current interaction. Do not read or modify project files,
+      do not browse the web, do not contact other agents, and do not send messages elsewhere.

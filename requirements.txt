@@ -1,0 +1,2 @@
+# No third-party Python dependencies are required.
+# The verification and vote-tally tools use Python's standard library.
