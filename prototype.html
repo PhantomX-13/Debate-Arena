@@ -207,8 +207,8 @@
     <header>
       <h1>Debate Arena</h1>
       <p class="sub">
-        Clickable mock of the final Discord product with <b>4 modes</b>.
-        Watch how Coach paths change by mode, readiness, and time box — not just “pick A or B”.
+        Scripted product preview with <b>4 modes</b>.
+        Explore the workflow, group input, evidence review, human vote, and report.
       </p>
       <div class="badges">
         <span class="badge">4 modes locked</span>
@@ -217,6 +217,7 @@
       </div>
     </header>
 
+    <p style="border:1px solid #b45309;background:#fffbeb;padding:12px 16px;border-radius:12px;color:#78350f"><b>Scripted preview:</b> this page does not run AI agents, browse live sources, connect to Discord, or save a real case report. Do not present its sample claims, scores, votes, or second-round outcome as live results.</p>
     <div class="layout">
       <aside class="card side">
         <div>
@@ -323,7 +324,7 @@
     ];
 
     const PHASES = [
-      "Request", "Profile + time", "Scout", "Debate", "Coach path", "Fact-check", "Judge", "Human vote", "Report"
+      "Request", "Profile + time", "Scout + options", "Group views", "Debate", "Coach path", "Fact-check", "Judge", "Human vote", "Report"
     ];
 
     const MODES = {
@@ -615,26 +616,31 @@
         },
         {
           phase: 3, agentId: "mod",
+          body: `Before I start the debate, anyone can share a view, reason, fact, or source link about A, B, or neither.\n\nExample group contribution: “I lean toward A because it fits our time. I heard B has lower setup cost, but I do not have a source yet.”\n\nThe Moderator keeps each person’s contribution attributed and sends factual claims for checking. This sample is scripted.`,
+          callout: ["Group views first", "Optional member input is included before the agents debate; unsupported facts remain unverified."]
+        },
+        {
+          phase: 4, agentId: "mod",
           body: `Debate pair:\nA → @Advocate A : ${optA}\nB → @Advocate B : ${optB}\nRound 1 openings.`,
           callout: ["Two options", "Moderator picks best profile fits; others stay runners-up."]
         },
         {
-          phase: 3, agentId: "advA",
+          phase: 4, agentId: "advA",
           body: `Opening for A.\nFits time box + goal. [V] Switch/docs support agent+chat workflows.\nHonest risk: ${state.ready === "not_ready" ? "readiness gap" : "scope creep"}.\n@Moderator`,
           callout: ["Advocate A", "Sincere case + strongest honest risk."]
         },
         {
-          phase: 3, agentId: "advB",
+          phase: 4, agentId: "advB",
           body: `Opening for B.\nAlternative path. Some demand claims [U].\nRisk: worse fit to hours/hardware.\n@Moderator`,
           callout: ["Advocate B", "May concede later — honest, not hostile."]
         },
         {
-          phase: 4, agentId: "mod",
+          phase: 5, agentId: "mod",
           body: `@Coach produce the **${mode}** path (readiness=${state.ready}). Then Fact-Checker → Judge.`,
           callout: ["Coach is mode-specific", "This step is what changed in the product."]
         },
         {
-          phase: 4, agentId: "coach",
+          phase: 5, agentId: "coach",
           body: coachBlock(),
           callout: [
             mode === "LEARNING" ? "Replaced LEARNING verdicts" :
@@ -651,18 +657,18 @@
           ]
         },
         {
-          phase: 5, agentId: "fact",
+          phase: 6, agentId: "fact",
           body: `CLAIM | RESULT | NOTE\nSwitch centrality | Verified | hackathon page\nDemand snippet | Unverified | blog\nDead link sample | Dead link | example.invalid\n\nCounts: V2 · U1 · C0 · Dead1\n@Judge`,
           callout: ["Fact-Checker", "Labels + counts; backs tools/verify_sources.py."]
         },
         {
-          phase: 6, agentId: "judge",
-          body: `Rubric (${mode}): ${rubric}\n\nA weighted ahead of B.\nCONFIDENCE: medium\nWHAT WOULD CHANGE THIS: more skill evidence or a hard deadline.\nI do not vote. @Moderator`,
-          callout: ["Judge ≠ decider", "Scores only; humans vote."]
+          phase: 7, agentId: "judge",
+          body: `Short result: A may fit the goal a little better. The main uncertainty is the unverified profile and source evidence.\n\nDETAILED REVIEW\nRubric (${mode}): ${rubric}\nExample scores and both sides’ strongest reasons. Sample claims remain unverified. What could change the result: checked evidence about skills, time, or the deadline.\n\nThis is scripted, not a profile-based evaluation. Judge scores are not votes. @Moderator`,
+          callout: ["Short answer, then detail", "Teammates can inspect both sides, checks, scores, and assumptions. Humans vote."]
         },
         {
-          phase: 7, agentId: "mod",
-          body: `FINAL REPORT (draft)\nMode: ${mode} | Readiness: ${state.ready}\nA: ${optA}\nB: ${optB}\nCoach path + fact-check counts included.\nLimitations: opinions ≠ facts; research gaps are candidates; times are ESTIMATE.\n\nVote: **A**, **B**, or **MORE INFO**.`,
+          phase: 8, agentId: "mod",
+          body: `SHORT RESULT\nA may better fit the example goal. Main uncertainty: the sample profile and claims are not verified.\n\nDETAILED REVIEW\nMode: ${mode} | Readiness: ${state.ready}\nA: ${optA}\nB: ${optB}\nRubric: ${rubric}\nCoach path + fact-check counts included.\nLimitations: opinions are not facts; research gaps are candidates; times are estimates.\n\nThe case owner closes each round. Vote **A**, **B**, or **MORE INFO**; round 2 keeps the same options after one focused evidence pass.`,
           callout: ["Your decision", "Vote below — same as Discord majority vote."],
           showVote: true
         },
@@ -711,9 +717,9 @@
       votePanel.classList.remove("show");
       addMsg({
         agentId: "mod",
-        body: `SIMULATED vote: **${v}**. No report was saved and no agent was contacted.\n${v === 'MORE INFO' ? 'In the intended workflow, the first ballot triggers one focused evidence pass and a second ballot.' : 'In a real case, the case owner closes the ballot and the Moderator counts verified human votes.'}`
+        body: `SIMULATED vote: **${v}**. No report was saved and no agent was contacted.\n${v === 'MORE INFO' ? 'In the intended workflow, the first ballot triggers one focused evidence pass and a second ballot. Round 2 without an A/B majority ends PENDING.' : 'In a real case, the case owner closes each ballot and the Moderator counts verified human votes.'}`
       });
-      renderPhases(8);
+      renderPhases(9);
       setCallout("Simulation", "This scripted preview does not run agents, conduct research, count real votes or save a report.");
       progressEl.textContent = "Done";
       document.getElementById("btnStep").disabled = true;

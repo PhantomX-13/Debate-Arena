@@ -16,7 +16,14 @@ Verdicts: `SUPPORTED`, `CONTRADICTED`, `UNSUPPORTED`, `UNVERIFIED`, `DEAD_LINK`.
 ## Coach assessment per option
 Include prerequisites and the applicable mode verdict. For Project, include what to learn first and what can be learned during the project.
 
-## Judge recommendation and confidence
+## Judge recommendation
+Give a short, plain-language summary first: the suggested choice, main reason, and main uncertainty.
+
+### Detailed review
+Show both sides, claim checks, scores, assumptions, and limitations so teammates can verify the reasoning.
+
+## Participant contributions
+For each contribution, record the human author, whether it supports A, B, or neither, and their opinion in their own meaning. List factual claims and source links separately with the Fact-Checker's verdict. Record when no optional contributions were received; do not imply group endorsement from silence.
 ## Human ballot and decision
 For each round record its opening and closure, counts for A, B and MORE INFO, the verified human tally, and any limit on author verification. Record the final decision or pending status.
 

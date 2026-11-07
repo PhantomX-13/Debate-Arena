@@ -1,6 +1,6 @@
 # Debate Arena — Flip the Switch Best Blog handoff
 
-**Status as of November 6, 2026:** The Switch and Discord foundation passed Session 1. The live proof is a two-agent source check plus a separate human voting test. The full decision workflow is still planned. This is a reference pack for the teammate writing the article. You can read it on its own, upload it to an AI tool, or use the repository links if you have the project files.
+**Status as of November 7, 2026:** The Switch and Discord foundation passed Session 1, all four decision modes have been exercised, and live `MORE INFO` cases ended in A, B, and `PENDING`. A teammate-led Learning case also produced a report attachment. A later Project case exercised the group-input invitation with no teammate contributions; its round-2 close is awaiting the Moderator's final acknowledgement. This is a reference pack for the teammate writing the article. You can read it on its own, upload it to an AI tool, or use the repository links if you have the project files.
 
 ## What the organizers want
 
@@ -64,7 +64,7 @@ For the post, use the Scout and Checker replies as the main screenshot. If possi
 
 ## The product roadmap
 
-**Session 2** is the first full product run. The Moderator opens one case per room, asks for the student’s goal, hours per day, deadline, evidence of skills, and constraints, then records the profile and current stage in the room. The Scout finds candidates and sources. The Moderator selects two options. Both Advocates make an opening and a rebuttal. The Coach assesses readiness. The Fact-Checker checks the claims. The Judge applies the selected rubric. The Moderator posts a draft for human A/B voting and delivers a final Markdown report under `reports/`, or posts it in Discord if file writing is unavailable. The current Cursor-backed `@astralis` still needs a working Moderator setup. The Session 2 acceptance test is a real Learning case from request to report, plus checks across all four modes.
+**The full decision workflow** runs in one Discord room per active case. The Moderator asks for the student's goal, available time, deadline, skill evidence, current learning where relevant, and constraints. Scout proposes candidates and sources. The Moderator fixes two options, invites optional attributed opinions/facts from group members, then starts the debate. Both Advocates make openings and rebuttals; the Coach assesses readiness; the Fact-Checker checks claims; and the Judge applies the selected rubric. The result starts with a concise recommendation and includes a detailed review for teammates. Humans vote and the Moderator saves a Markdown report under `reports/`, or posts it in Discord if file writing is unavailable.
 
 | Mode | Agreed behavior |
 |---|---|
@@ -75,7 +75,11 @@ For the post, use the Scout and Checker replies as the main screenshot. If possi
 
 The product template uses the names `debate-moderator`, `debate-scout`, `debate-advocate-a`, `debate-advocate-b`, `debate-coach`, `debate-factchecker`, and `debate-judge`. The three live Session 1 test agents are the ones in the evidence table. Check the verification log for later provisioning and Discord results before describing the product roles as operational.
 
-**Session 3** adds `MORE INFO`. If it wins the first ballot, or the first ballot has no majority, the Moderator asks what evidence would help. The Scout investigates that question, the Fact-Checker checks new claims, and the Judge updates the ranking if warranted. Humans vote again on the same A/B options. If neither wins, the final report records the decision as pending and lists unresolved evidence. The case owner closes each ballot and each human’s latest valid vote counts. The evaluation will compare beginner and experienced Learning profiles, test a planted unreachable URL and a reachable but unsuitable source, and have a teammate reproduce a case and retrieve its report. The HTML prototype is scripted. Learning is the planned main demo.
+**Session 3** adds `MORE INFO`. If it wins the first ballot, or the first ballot has no A/B majority, the Moderator asks what evidence would help. The Scout investigates that question, the Fact-Checker checks new claims, and the Judge updates the ranking if warranted. Humans vote again on the same A/B options. Live cases `DA-7F07-L3` and `DA-7F07-L5` ended in A and B, and `DA-7F07-L6` ended `PENDING` after no A/B majority in round 2. Beginner and experienced profiles gave different Coach verdicts for Rust in the tested runs. Local URL-verifier tests cover an unreachable URL and a reachable page missing an expected term. The Project case `DA-7F07-P1` also demonstrated the optional group-input invitation and owner completion gate, but the contribution window was empty; actual teammate opinions and factual claims still need a live test. Its round-2 close awaits Moderator acknowledgement. The HTML prototypes are scripted; they do not connect to Switch or run live research.
+
+## Provider portability and cost
+
+The role prompts and rubrics are not tied to a particular model, but the current Switch template pins `provider: codex` and the verified live setup used Codex. A clone can select another provider detected by its Switch installation by editing the provider field and authenticating it in Switch Console, then checking handoffs and tool access. This repository does not yet implement direct adapters for arbitrary OpenAI-compatible endpoints, every listed vendor API, or in-browser Transformers.js/ONNX. Local models may avoid API usage charges only when a compatible installed Switch provider can run them; hardware, model downloads, provider setup, and each model's license still apply. See [provider setup and limits](PROVIDERS.md).
 
 ## A structure the author can adapt
 

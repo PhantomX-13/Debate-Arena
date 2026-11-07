@@ -1,9 +1,24 @@
 # Debate Arena (working name)
 
-Use Debate Arena to compare hackathon ideas, projects, learning paths, or research topics in Discord. The agents debate the options, assess your readiness, check the evidence, and rank the options. Humans make the decision.
+Use Debate Arena to compare hackathon ideas, projects, learning paths, or research topics in Discord. The agents debate two options, assess readiness, check evidence, and rank the options. Group members can share attributed opinions and evidence before the debate; humans make the decision.
 
 ## How Switch is used
-Switch bridges the existing Discord channel to a room. Codex runs the Moderator, Scout, Advocate A, Advocate B, Coach, Fact-Checker, and Judge on the host Mac. The Moderator coordinates their named handoffs. Teammates use the workflow by addressing the Moderator in Discord.
+Switch bridges the existing Discord channel to a room. Each of the seven roles runs as a Switch agent; Switch routes the named handoffs and messages. The checked team setup used Codex on the host Mac. The prompts and rubric are separate from the model, but this repository does not yet include its own model API adapter. See [provider setup and limits](docs/PROVIDERS.md).
+
+## Clone and run the local checks
+
+The Python utilities use only the Python standard library. No third-party Python packages or paid API key are required for the local vote-tally and URL-check tools.
+
+```sh
+git clone <repository-url>
+cd debate-arena
+python3 -m unittest discover -s tests
+python3 tools/verify_sources.py --file reports/<case-id>.md
+```
+
+The standalone text client in `tools/model_provider.py` can also check an OpenAI-compatible endpoint. Set `DEBATE_ARENA_BASE_URL` and `DEBATE_ARENA_MODEL`, add `DEBATE_ARENA_API_KEY` only if the endpoint requires it, then run `python3 tools/model_provider.py "Reply with one sentence."`. This client does not run the Discord debate workflow; see [provider limits](docs/PROVIDERS.md).
+
+To run the full Discord workflow, also install Switch Console, set up a supported agent provider, connect a Discord bot/room, and create the agents from the template. Switch itself does not include a model, and a full case requires a running provider. The `codex` setting in the checked template is the provider used for our live run; change each agent to a provider installed in your Switch Console if needed. A local model can avoid a model API subscription when the selected provider supports it, but still needs compatible software and hardware. See [provider setup and limits](docs/PROVIDERS.md).
 
 ## Existing Discord setup
 
@@ -21,12 +36,14 @@ See the [verification log](docs/RESULTS.md) for the live deployment status and a
 
 Tag `@debate-moderator` with a mode and your question. For example, `@debate-moderator LEARNING Should I keep learning Python or start Rust?` Include your goal, hours per day, deadline or none, examples of what you can already do, and constraints. For Learning, include what you currently study. For Project, include your proposed idea if you have one.
 
-When the Moderator opens the ballot, tag it with the case ID and `A` or `B`. The case owner tags it with the case ID and `CLOSE` to end voting. The Moderator posts the tally and gives the result. The default report folder is `reports/` within the Moderator’s configured working directory on the host. If writing is unavailable, the Moderator posts the report in Discord.
+After the Moderator presents the two options, any participant may share an opinion, reason, factual claim, or source link about A, B, or neither. The Moderator keeps contributions attributed and asks the Fact-Checker to examine factual claims where possible. Participation is optional; the human group makes the final decision.
 
-**Session 3 in progress:** the workspace template specifies round-specific ballots (`<case-id>-R1` and `-R2`) with `A`, `B`, or `MORE INFO`; the live Moderator still needs its instructions updated and the two-round flow verified. A first-round MORE INFO majority or no majority triggers one evidence pass; a second ballot without an A/B majority ends pending. Follow the Moderator's actual prompts until the live update is verified. No agent votes count.
+When the Moderator opens a ballot, participants tag it with the round ID and `A`, `B`, or `MORE INFO`. The case owner tags it with that round ID and `CLOSE` to end voting. Each verified human's latest valid vote in that round counts once. The Moderator posts the tally and gives the result. The default report folder is `reports/` within the Moderator’s configured working directory on the host. If writing is unavailable, the Moderator posts the report in Discord.
+
+**Session 3 status:** live Discord cases verified both final outcomes: an A/B choice after one MORE INFO pass (`DA-7F07-L5`) and a PENDING result after the second round also returned MORE INFO (`DA-7F07-L6`). A teammate also ran and retrieved a report in `DA-7F07-L7`. The latest Project case (`DA-7F07-P1`) exercised the optional group-input invitation, the short answer plus detailed review, and one MORE INFO follow-up. No teammate submitted optional contributions in that case; its final round still needs the Moderator to acknowledge the owner's posted `CLOSE` and save the final report. See [the verification log](docs/RESULTS.md). No agent votes count.
 
 ## Verify sources
 Run `python3 tools/verify_sources.py --file <path-to-report.md>` from the project directory to check URL reachability. The Fact-Checker evaluates whether a source supports its claim.
 
 ## Limits (be honest)
-Research gaps are candidates. Time estimates are labeled. The persona checks are defined in [the evaluation protocol](tests/EVAL.md).
+Research gaps are candidates. Time estimates are labeled. The human-readable first-page summary is followed by a detailed review for teammates. The persona checks are defined in [the evaluation protocol](tests/EVAL.md).
