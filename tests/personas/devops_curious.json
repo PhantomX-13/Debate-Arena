@@ -1,0 +1,30 @@
+{
+  "mode": "LEARNING",
+  "currently_learning": "Linux and Docker",
+  "goal": "Decide between DevOps and AI engineering",
+  "time_available": "2 hours/day for 1 month",
+  "skills": [
+    {
+      "name": "Linux",
+      "evidence": "runs a home server",
+      "level": "working"
+    },
+    {
+      "name": "Docker",
+      "evidence": "containerised two small apps",
+      "level": "basic"
+    },
+    {
+      "name": "Python scripting",
+      "evidence": "automation scripts",
+      "level": "basic"
+    }
+  ],
+  "interests": [
+    "infrastructure"
+  ],
+  "constraints": [
+    "laptop only"
+  ],
+  "question": "AI engineering or DevOps or infrastructure?"
+}

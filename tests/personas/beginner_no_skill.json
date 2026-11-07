@@ -1,0 +1,15 @@
+{
+  "mode": "LEARNING",
+  "currently_learning": "None",
+  "goal": "Join hackathons and build a first project",
+  "time_available": "2 hours/day for 3 weeks",
+  "skills": [],
+  "interests": [
+    "AI"
+  ],
+  "constraints": [
+    "laptop only",
+    "no budget"
+  ],
+  "question": "Python or Rust? AI engineering or DevOps?"
+}

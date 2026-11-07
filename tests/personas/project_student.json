@@ -1,0 +1,10 @@
+{
+  "mode": "PROJECT",
+  "goal": "Build a portfolio project that shows backend and data skills",
+  "hours_per_day": 2,
+  "deadline": "4 weeks from case start",
+  "skills": [{"name": "Python", "evidence": "Wrote a CSV parser and a small API"}],
+  "constraints": ["Laptop only", "No paid services"],
+  "proposed_project": "A budget tracker for students",
+  "question": "Should I build the budget tracker or a different project for the same goal?"
+}

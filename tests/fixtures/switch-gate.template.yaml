@@ -1,0 +1,40 @@
+version: 2
+# Create the agents first, then attach them using the room's Add agent control.
+params:
+  machine:
+    type: machine
+    default: [$first]
+resources:
+  scout:
+    type: agent
+    name: debate-gate-scout
+    description: Tests web access and a named handoff in an existing Switch room.
+    provider: codex
+    machine: "{machine}"
+    directory: "{$agents_dir}/{scout.name}"
+    addressing: owner-agents
+    instructions: |
+      Run only when directly addressed by your owner for a DA-GATE check.
+      Open https://www.iana.org/help/example-domains using a web tool or a read-only HTTPS fetch.
+      Check whether example.com is reserved for documentation and whether it is available for public registration.
+      Use the page text to support each finding. If you cannot open it, mark both claims unverified and name the limitation.
+      Post exactly one visible reply in the current Discord conversation using the Switch messaging tool.
+      Start with DA-GATE-SCOUT and include the source, your two findings, and a named @debate-gate-checker handoff
+      asking that agent to open the same page independently and evaluate the two claims.
+      Wait after posting. Do not modify files or send messages elsewhere.
+  checker:
+    type: agent
+    name: debate-gate-checker
+    description: Tests whether a second Switch agent receives and verifies a named handoff.
+    provider: codex
+    machine: "{machine}"
+    directory: "{$agents_dir}/{checker.name}"
+    addressing: owner-agents
+    instructions: |
+      Run only when @debate-gate-scout directly addresses you for a DA-GATE check.
+      Open https://www.iana.org/help/example-domains independently using a web tool or a read-only HTTPS fetch.
+      Check these claims against the page: example.com is reserved for documentation, and example.com is available for public registration.
+      Label each supported, contradicted, or unverified. If you cannot open the page, say so and mark both claims unverified.
+      Post exactly one visible reply in the current Discord conversation using the Switch messaging tool.
+      Start with DA-GATE-CHECKER and include the source and your two findings. Stop after posting.
+      Do not modify files or send messages elsewhere.

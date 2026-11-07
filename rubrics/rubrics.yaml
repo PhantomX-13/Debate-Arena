@@ -1,0 +1,27 @@
+# Mirrors the Judge prompt. Weights sum to 100 per mode.
+hackathon:   # project defaults; use the event's criteria when supplied
+  use_of_switch: 30
+  technical_execution: 25
+  creativity_and_impact: 25
+  presentation: 20
+  gate: "cannot be built in the time left => cap total at 5/10"
+project:
+  expected_future_value: 40
+  goals_and_skills_fit: 25
+  feasibility_in_available_time: 25
+  scope_realism: 10
+learning:
+  goal_alignment: 30
+  demand_evidence: 25
+  learning_curve_vs_time: 25
+  time_to_first_project: 20
+research:
+  evidence_of_gap: 30
+  feasibility_data_resources: 25
+  interest_and_skill_fit: 25
+  novelty_vs_related_work: 20
+verdicts:
+  hackathon: [GO NOW, GO AFTER BUILDING, NOT NOW]
+  learning: [PROCEED, SKIP_FOR_NOW, LEARN_THEN_PROCEED, NOT_NOW]
+  research: [START, PREPARE_FIRST, LONGER_LEARNING_PLAN]
+claim_labels: [SUPPORTED, CONTRADICTED, UNSUPPORTED, UNVERIFIED, DEAD_LINK]

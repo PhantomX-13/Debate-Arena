@@ -1,0 +1,26 @@
+{
+  "mode": "RESEARCH",
+  "goal": "Pick a thesis topic",
+  "hours_per_day": 2,
+  "deadline": null,
+  "skills": [
+    {
+      "name": "ML coursework",
+      "evidence": "2 courses, one class project",
+      "level": "basic"
+    },
+    {
+      "name": "PyTorch",
+      "evidence": "trained a small classifier",
+      "level": "basic"
+    }
+  ],
+  "interests": [
+    "low-resource language NLP"
+  ],
+  "constraints": [
+    "one GPU-less laptop",
+    "no lab access"
+  ],
+  "question": "What research topic fits me and where might the gap be?"
+}

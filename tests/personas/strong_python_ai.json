@@ -1,0 +1,25 @@
+{
+  "mode": "LEARNING",
+  "currently_learning": "Building LLM applications in Python",
+  "goal": "Get an AI engineering internship",
+  "time_available": "3 hours/day for 2 months",
+  "skills": [
+    {
+      "name": "Python",
+      "evidence": "built 3 projects, one deployed API",
+      "level": "working"
+    },
+    {
+      "name": "ML basics",
+      "evidence": "completed a university ML course",
+      "level": "basic"
+    }
+  ],
+  "interests": [
+    "LLM apps"
+  ],
+  "constraints": [
+    "laptop only"
+  ],
+  "question": "Python or Rust? AI engineering or DevOps?"
+}

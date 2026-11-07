@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Debate Arena — 4-Mode Prototype</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --ink: #1a2332;
+      --muted: #5b6b7c;
+      --line: #d7e0ea;
+      --paper: #f2f5f8;
+      --panel: #fff;
+      --accent: #0f766e;
+      --accent-soft: #d9f3ef;
+      --warn: #b45309;
+      --danger: #b91c1c;
+      --ok: #15803d;
+      --discord: #313338;
+      --discord-deep: #1e1f22;
+      --discord-text: #dbdee1;
+      --discord-muted: #949ba4;
+      --radius: 14px;
+      --shadow: 0 18px 50px rgba(26, 35, 50, 0.08);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "IBM Plex Sans", system-ui, sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(900px 420px at 8% -10%, #c8efe8 0%, transparent 55%),
+        radial-gradient(700px 380px at 100% 0%, #e7eef8 0%, transparent 50%),
+        var(--paper);
+    }
+    .shell { max-width: 1320px; margin: 0 auto; padding: 22px 18px 40px; display: grid; gap: 16px; }
+    h1 {
+      font-family: Fraunces, Georgia, serif;
+      font-size: clamp(1.7rem, 3vw, 2.4rem);
+      margin: 0;
+      letter-spacing: -0.02em;
+    }
+    .sub { margin: 6px 0 0; color: var(--muted); max-width: 70ch; line-height: 1.5; }
+    .badges { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+    .badge {
+      font-size: 12px; font-weight: 600; padding: 5px 10px; border-radius: 999px;
+      background: var(--accent-soft); color: var(--accent); border: 1px solid #b7e4dc;
+    }
+    .badge.alt { background: #eef2ff; color: #3730a3; border-color: #c7d2fe; }
+    .layout {
+      display: grid;
+      grid-template-columns: 300px 1fr 300px;
+      gap: 14px;
+      min-height: 740px;
+    }
+    @media (max-width: 1120px) { .layout { grid-template-columns: 1fr; } }
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+    .side, .right { padding: 14px; display: flex; flex-direction: column; gap: 14px; }
+    h2, h3 {
+      margin: 0;
+      font-size: 12px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--muted);
+      font-weight: 600;
+    }
+    .stack { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
+    .mode-btn, .ready-btn, .feature-btn {
+      width: 100%; text-align: left; border: 1px solid var(--line); background: #fff;
+      border-radius: 12px; padding: 11px 12px; cursor: pointer; font: inherit; color: inherit;
+      transition: border-color .15s, background .15s, transform .15s;
+    }
+    .mode-btn:hover, .ready-btn:hover, .feature-btn:hover { border-color: var(--accent); transform: translateY(-1px); }
+    .mode-btn.active, .ready-btn.active { border-color: var(--accent); background: var(--accent-soft); }
+    .mode-btn strong, .ready-btn strong, .feature-btn strong { display: block; font-size: 13.5px; margin-bottom: 3px; }
+    .mode-btn span, .ready-btn span, .feature-btn span { display: block; font-size: 12px; color: var(--muted); line-height: 1.4; }
+
+    .mode-guide {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 12px;
+      background: #f8fafc;
+      font-size: 13px;
+      line-height: 1.45;
+      color: var(--muted);
+      min-height: 120px;
+    }
+    .mode-guide b { color: var(--ink); }
+    .mode-guide ul { margin: 6px 0 0; padding-left: 18px; }
+    .mode-guide li { margin: 3px 0; }
+
+    .chat-wrap { display: flex; flex-direction: column; min-height: 740px; }
+    .chat-bar {
+      background: var(--discord-deep); color: #fff; padding: 12px 16px;
+      display: flex; justify-content: space-between; align-items: center; gap: 10px;
+    }
+    .chat-bar .room { font-weight: 600; }
+    .chat-bar .room::before { content: "#"; color: var(--discord-muted); margin-right: 4px; }
+    .chat-bar .status { font-size: 12px; color: var(--discord-muted); }
+    .dot { width: 8px; height: 8px; border-radius: 50%; background: #23a559; display: inline-block; margin-right: 6px; }
+    .chat {
+      flex: 1; background: var(--discord); color: var(--discord-text);
+      padding: 14px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; max-height: 560px;
+    }
+    .msg { display: grid; grid-template-columns: 40px 1fr; gap: 10px; animation: rise .3s ease both; }
+    @keyframes rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+    .avatar {
+      width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center;
+      color: #fff; font-size: 12px; font-weight: 700;
+    }
+    .meta { display: flex; gap: 8px; align-items: baseline; margin-bottom: 3px; }
+    .name { font-weight: 600; color: #fff; }
+    .tag { font-size: 10px; font-weight: 700; background: #5865f2; color: #fff; border-radius: 3px; padding: 1px 5px; }
+    .time { font-size: 11px; color: var(--discord-muted); }
+    .body { font-size: 14px; line-height: 1.5; white-space: pre-wrap; }
+    .label-v { color: #4ade80; font-family: "IBM Plex Mono", monospace; font-size: 12px; font-weight: 600; }
+    .label-u { color: #fbbf24; font-family: "IBM Plex Mono", monospace; font-size: 12px; font-weight: 600; }
+    .label-c { color: #f87171; font-family: "IBM Plex Mono", monospace; font-size: 12px; font-weight: 600; }
+    .op { color: #c4b5fd; font-weight: 600; font-size: 12px; }
+    .est { color: #67e8f9; font-weight: 600; font-size: 12px; }
+    .mention { color: #c9cdfb; background: rgba(88,101,242,.3); border-radius: 3px; padding: 0 2px; }
+    .verdict {
+      display: inline-block; font-family: "IBM Plex Mono", monospace; font-size: 11px; font-weight: 700;
+      padding: 2px 7px; border-radius: 4px; color: #fff; margin: 0 2px;
+    }
+    .v-proceed, .v-go { background: #15803d; }
+    .v-skip { background: #0369a1; }
+    .v-learn, .v-after { background: #b45309; }
+    .v-not { background: #b91c1c; }
+
+    .composer { background: var(--discord-deep); padding: 12px 14px 14px; display: grid; gap: 10px; }
+    .vote-panel { display: none; gap: 8px; padding: 10px; background: #0f172a; border-radius: 10px; }
+    .vote-panel.show { display: grid; }
+    .vote-panel p { margin: 0; color: #cbd5e1; font-size: 13px; }
+    .vote-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+    .composer-row { display: flex; gap: 8px; }
+    .composer input {
+      flex: 1; border: none; background: #383a40; color: #fff; border-radius: 8px;
+      padding: 12px 14px; font: inherit; outline: none;
+    }
+    .controls { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+    button.primary, button.ghost, button.danger {
+      border: none; border-radius: 8px; padding: 10px 14px; font: inherit; font-weight: 600; cursor: pointer;
+    }
+    button.primary { background: var(--accent); color: #fff; }
+    button.primary:disabled, button.ghost:disabled { opacity: .45; cursor: not-allowed; }
+    button.ghost { background: #383a40; color: #fff; }
+    button.danger { background: #b91c1c; color: #fff; }
+    .progress { font-size: 12px; color: var(--discord-muted); font-family: "IBM Plex Mono", monospace; }
+
+    .phase-list { list-style: none; margin: 8px 0 0; padding: 0; display: grid; gap: 6px; }
+    .phase-list li {
+      display: flex; gap: 8px; align-items: center; padding: 8px 10px; border-radius: 10px;
+      border: 1px solid var(--line); font-size: 12.5px; color: var(--muted);
+    }
+    .phase-list li.done { background: #ecfdf5; border-color: #a7f3d0; color: var(--ok); font-weight: 600; }
+    .phase-list li.current { background: var(--accent-soft); border-color: #99d5cb; color: var(--accent); font-weight: 600; }
+    .phase-list .n {
+      width: 20px; height: 20px; border-radius: 50%; display: grid; place-items: center;
+      font-size: 11px; background: #e2e8f0; color: #475569; flex-shrink: 0;
+    }
+    .phase-list li.done .n { background: #bbf7d0; color: var(--ok); }
+    .phase-list li.current .n { background: #99d5cb; color: var(--accent); }
+
+    .agents { display: grid; gap: 6px; margin-top: 8px; }
+    .agent { display: flex; gap: 8px; align-items: center; font-size: 12.5px; padding: 6px 8px; border-radius: 8px; }
+    .agent.on { background: var(--accent-soft); }
+    .agent .a {
+      width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center;
+      color: #fff; font-size: 10px; font-weight: 700; flex-shrink: 0;
+    }
+    .callout {
+      border: 1px dashed #94a3b8; border-radius: 12px; padding: 12px; background: #f8fafc;
+      font-size: 13px; line-height: 1.45; color: var(--muted); min-height: 96px;
+    }
+    .callout strong { color: var(--ink); display: block; margin-bottom: 4px; }
+    .legend { display: grid; gap: 6px; font-size: 12px; margin-top: 8px; }
+    .legend div { display: flex; gap: 8px; align-items: center; }
+    .pill {
+      font-family: "IBM Plex Mono", monospace; font-size: 10px; font-weight: 700;
+      padding: 2px 6px; border-radius: 4px; color: #fff; white-space: nowrap;
+    }
+    footer.note { font-size: 12px; color: var(--muted); text-align: center; }
+    .tip {
+      position: fixed; inset: auto 16px 16px auto; max-width: 340px; background: var(--ink);
+      color: #fff; padding: 14px 16px; border-radius: 12px; box-shadow: 0 20px 40px rgba(0,0,0,.25);
+      z-index: 20; display: none; animation: rise .25s ease;
+    }
+    .tip.show { display: block; }
+    .tip button {
+      margin-top: 10px; background: var(--accent); color: #fff; border: none;
+      border-radius: 8px; padding: 8px 12px; font-weight: 600; cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header>
+      <h1>Debate Arena</h1>
+      <p class="sub">
+        Clickable mock of the final Discord product with <b>4 modes</b>.
+        Watch how Coach paths change by mode, readiness, and time box — not just “pick A or B”.
+      </p>
+      <div class="badges">
+        <span class="badge">4 modes locked</span>
+        <span class="badge alt">LEARNING verdicts replaced</span>
+        <span class="badge">PROJECT = research + learn-first / on-the-go</span>
+      </div>
+    </header>
+
+    <div class="layout">
+      <aside class="card side">
+        <div>
+          <h2>1. Mode</h2>
+          <div class="stack" id="modeBtns"></div>
+        </div>
+        <div class="mode-guide" id="modeGuide"></div>
+        <div>
+          <h2>2. Readiness (Research / Project)</h2>
+          <div class="stack">
+            <button class="ready-btn active" data-ready="ready" type="button">
+              <strong>Ready</strong>
+              <span>Prereqs done → start now + schedule hours</span>
+            </button>
+            <button class="ready-btn" data-ready="partial" type="button">
+              <strong>Partial</strong>
+              <span>Learn missing pieces, then start</span>
+            </button>
+            <button class="ready-btn" data-ready="not_ready" type="button">
+              <strong>Not ready</strong>
+              <span>Full learn plan + set a deadline</span>
+            </button>
+          </div>
+        </div>
+        <div>
+          <h2>Feature tips</h2>
+          <div class="stack">
+            <button class="feature-btn" data-f="time" type="button"><strong>Time box always</strong><span>Hours/day + deadline or proposed deadline</span></button>
+            <button class="feature-btn" data-f="learn" type="button"><strong>LEARNING verdicts</strong><span>PROCEED · SKIP_FOR_NOW · LEARN_THEN_PROCEED · NOT_NOW</span></button>
+            <button class="feature-btn" data-f="project" type="button"><strong>PROJECT split</strong><span>Learn-first vs learn-on-the-go (part X)</span></button>
+            <button class="feature-btn" data-f="hack" type="button"><strong>HACKATHON Coach</strong><span>Still GO NOW / GO AFTER / NOT NOW</span></button>
+          </div>
+        </div>
+      </aside>
+
+      <main class="card chat-wrap">
+        <div class="chat-bar">
+          <div class="room">debate-arena</div>
+          <div class="status"><span class="dot"></span>7 agents · Switch room (mock)</div>
+        </div>
+        <div class="chat" id="chat" aria-live="polite"></div>
+        <div class="composer">
+          <div class="vote-panel" id="votePanel">
+            <p>Human vote is final. Agents only recommend.</p>
+            <div class="vote-btns">
+              <button class="primary" type="button" data-vote="A">Vote A</button>
+              <button class="primary" type="button" data-vote="B">Vote B</button>
+              <button class="ghost" type="button" data-vote="MORE INFO">Need more info</button>
+            </div>
+          </div>
+          <div class="composer-row">
+            <input id="userInput" type="text" placeholder="Optional: type your own question…" />
+          </div>
+          <div class="controls">
+            <button class="primary" id="btnStart" type="button">Start case</button>
+            <button class="ghost" id="btnStep" type="button" disabled>Next step ▶</button>
+            <button class="ghost" id="btnAuto" type="button" disabled>Auto-play</button>
+            <button class="danger" id="btnReset" type="button">Reset</button>
+            <span class="progress" id="progress">Idle</span>
+          </div>
+        </div>
+      </main>
+
+      <aside class="card right">
+        <div>
+          <h3>Flow</h3>
+          <ol class="phase-list" id="phases"></ol>
+        </div>
+        <div>
+          <h3>Agents</h3>
+          <div class="agents" id="agents"></div>
+        </div>
+        <div>
+          <h3>Verdict chips</h3>
+          <div class="legend">
+            <div><span class="pill" style="background:#15803d">PROCEED / GO NOW</span> start this path</div>
+            <div><span class="pill" style="background:#0369a1">SKIP_FOR_NOW</span> keep existing focus</div>
+            <div><span class="pill" style="background:#b45309">LEARN_THEN / AFTER</span> prep first</div>
+            <div><span class="pill" style="background:#b91c1c">NOT_NOW</span> gap too big</div>
+            <div><span class="pill" style="background:#15803d">[V]</span> verified source opened</div>
+            <div><span class="pill" style="background:#b45309">[U]</span> unverified</div>
+          </div>
+        </div>
+        <div class="callout" id="callout">
+          <strong>How to use</strong>
+          Pick a mode (and readiness for RESEARCH/PROJECT). Press <em>Start case</em>, then step or auto-play. Compare LEARNING vs PROJECT vs RESEARCH Coach messages — that is the product difference.
+        </div>
+      </aside>
+    </div>
+    <footer class="note">Prototype only. Real product = Switch Console + Discord bot + live agents (or one Moderator fallback).</footer>
+  </div>
+
+  <div class="tip" id="tip"><div id="tipText"></div><button type="button" id="tipClose">Got it</button></div>
+
+  <script>
+    const AGENTS = [
+      { id: "mod", name: "Moderator", short: "MD", color: "#0f766e", role: "Mode, profile, hand-offs, report" },
+      { id: "scout", name: "Scout", short: "SC", color: "#0369a1", role: "Web research + candidates" },
+      { id: "advA", name: "Advocate A", short: "A", color: "#7c3aed", role: "Option 1" },
+      { id: "advB", name: "Advocate B", short: "B", color: "#c2410c", role: "Option 2" },
+      { id: "coach", name: "Coach", short: "CH", color: "#15803d", role: "Mode-specific path" },
+      { id: "fact", name: "Fact-Checker", short: "FC", color: "#b45309", role: "Verify claims" },
+      { id: "judge", name: "Judge", short: "JG", color: "#1e3a5f", role: "Rubric rank (not vote)" },
+    ];
+
+    const PHASES = [
+      "Request", "Profile + time", "Scout", "Debate", "Coach path", "Fact-check", "Judge", "Human vote", "Report"
+    ];
+
+    const MODES = {
+      LEARNING: {
+        title: "LEARNING",
+        blurb: "What should I learn / focus on?",
+        guide: `<b>LEARNING</b> — richer intake, then replaced verdicts.
+          <ul>
+            <li>Ask: currently learning, goals, interest, job demand, alignment</li>
+            <li>If no goal: ask until interest + prospects are clear</li>
+            <li>Verdicts: <code>PROCEED</code> · <code>SKIP_FOR_NOW</code> · <code>LEARN_THEN_PROCEED</code> · <code>NOT_NOW</code></li>
+            <li>Then rank options (same spirit as RESEARCH)</li>
+          </ul>`,
+        question: "Python vs Rust? AI engineering vs DevOps — what should I focus on?",
+      },
+      HACKATHON: {
+        title: "HACKATHON",
+        blurb: "Which hackathon idea to build?",
+        guide: `<b>HACKATHON</b> — same as original Flip-the-Switch flow.
+          <ul>
+            <li>Rubric: Switch 30 · Execution 25 · Impact 25 · Presentation 20</li>
+            <li>Feasibility gate if it cannot ship in time left</li>
+            <li>Coach still uses: GO NOW / GO AFTER BUILDING / NOT NOW</li>
+          </ul>`,
+        question: "Which Flip the Switch idea should our team of 4 build in ~1.5 days?",
+      },
+      PROJECT: {
+        title: "PROJECT",
+        blurb: "Build plan with learn-first vs on-the-go",
+        guide: `<b>PROJECT</b> — like RESEARCH on time + readiness, plus build split.
+          <ul>
+            <li>Always check hours/day and deadline (or propose one)</li>
+            <li>Ready / partial / not ready → start, learn-then-start, or full prep + deadline</li>
+            <li><b>Learn-first</b>: must finish before coding starts</li>
+            <li><b>Learn-on-the-go</b>: learn part X while building that module</li>
+          </ul>`,
+        question: "I want to build a student habit tracker app — am I ready, and what’s the plan?",
+      },
+      RESEARCH: {
+        title: "RESEARCH",
+        blurb: "Topic + candidate gaps + time path",
+        guide: `<b>RESEARCH</b> — readiness + time always.
+          <ul>
+            <li>Ready → start researching; propose schedule if no deadline</li>
+            <li>Partial → learn missing prereqs, then research</li>
+            <li>Not ready → full learn plan + set deadline + report (don’t fake “start now”)</li>
+            <li>Gaps are always “candidate gaps”, never confirmed</li>
+          </ul>`,
+        question: "What research topic fits low-resource NLP on a laptop with no GPU?",
+      },
+    };
+
+    const state = {
+      mode: "LEARNING",
+      ready: "ready",
+      step: -1,
+      script: [],
+      autoTimer: null,
+    };
+
+    const chatEl = document.getElementById("chat");
+    const phasesEl = document.getElementById("phases");
+    const agentsEl = document.getElementById("agents");
+    const progressEl = document.getElementById("progress");
+    const calloutEl = document.getElementById("callout");
+    const votePanel = document.getElementById("votePanel");
+    const modeGuide = document.getElementById("modeGuide");
+    const tip = document.getElementById("tip");
+    const tipText = document.getElementById("tipText");
+
+    function chip(cls, text) {
+      return `<span class="verdict ${cls}">${text}</span>`;
+    }
+
+    function fmt(text) {
+      return text
+        .replace(/\[V\]/g, '<span class="label-v">[V]</span>')
+        .replace(/\[U\]/g, '<span class="label-u">[U]</span>')
+        .replace(/\[C\]/g, '<span class="label-c">[C]</span>')
+        .replace(/OPINION/g, '<span class="op">OPINION</span>')
+        .replace(/ESTIMATE/g, '<span class="est">ESTIMATE</span>')
+        .replace(/@(Moderator|Scout|Advocate A|Advocate B|Coach|Fact-Checker|Judge)/g, '<span class="mention">@$1</span>')
+        .replace(/PROCEED/g, chip("v-proceed", "PROCEED"))
+        .replace(/SKIP_FOR_NOW/g, chip("v-skip", "SKIP_FOR_NOW"))
+        .replace(/LEARN_THEN_PROCEED/g, chip("v-learn", "LEARN_THEN_PROCEED"))
+        .replace(/GO AFTER BUILDING/g, chip("v-after", "GO AFTER BUILDING"))
+        .replace(/GO NOW/g, chip("v-go", "GO NOW"))
+        .replace(/NOT_NOW|NOT NOW/g, (m) => chip("v-not", m.includes("_") ? "NOT_NOW" : "NOT NOW"));
+    }
+
+    function renderModes() {
+      const wrap = document.getElementById("modeBtns");
+      wrap.innerHTML = Object.keys(MODES).map((k) => `
+        <button class="mode-btn ${state.mode === k ? "active" : ""}" data-mode="${k}" type="button">
+          <strong>${MODES[k].title}</strong>
+          <span>${MODES[k].blurb}</span>
+        </button>
+      `).join("");
+      wrap.querySelectorAll(".mode-btn").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          state.mode = btn.dataset.mode;
+          renderModes();
+          updateGuide();
+          document.getElementById("userInput").placeholder = MODES[state.mode].question;
+        });
+      });
+    }
+
+    function updateGuide() {
+      modeGuide.innerHTML = MODES[state.mode].guide;
+      const showReady = state.mode === "RESEARCH" || state.mode === "PROJECT";
+      document.querySelectorAll(".ready-btn").forEach((b) => {
+        b.style.opacity = showReady ? "1" : "0.45";
+        b.disabled = !showReady;
+      });
+    }
+
+    function renderAgents(active) {
+      agentsEl.innerHTML = AGENTS.map((a) => `
+        <div class="agent ${a.id === active ? "on" : ""}">
+          <div class="a" style="background:${a.color}">${a.short}</div>
+          <div><div style="font-weight:600">${a.name}</div>
+          <div style="font-size:11px;color:var(--muted)">${a.role}</div></div>
+        </div>`).join("");
+    }
+
+    function renderPhases(cur) {
+      phasesEl.innerHTML = PHASES.map((p, i) => {
+        const cls = i < cur ? "done" : i === cur ? "current" : "";
+        return `<li class="${cls}"><span class="n">${i + 1}</span>${p}</li>`;
+      }).join("");
+    }
+
+    function addMsg({ agentId, human, name, body }) {
+      const a = agentId ? AGENTS.find((x) => x.id === agentId) : null;
+      const el = document.createElement("div");
+      el.className = "msg";
+      el.innerHTML = `
+        <div class="avatar" style="background:${human ? "#64748b" : a.color}">${human ? "YOU" : a.short}</div>
+        <div>
+          <div class="meta">
+            <span class="name">${human ? (name || "You") : a.name}</span>
+            ${human ? "" : '<span class="tag">APP</span>'}
+            <span class="time">today</span>
+          </div>
+          <div class="body">${fmt(body)}</div>
+        </div>`;
+      chatEl.appendChild(el);
+      chatEl.scrollTop = chatEl.scrollHeight;
+      if (agentId) renderAgents(agentId);
+    }
+
+    function setCallout(title, text) {
+      calloutEl.innerHTML = `<strong>${title}</strong>${text}`;
+    }
+
+    function coachBlock() {
+      const m = state.mode;
+      const r = state.ready;
+
+      if (m === "LEARNING") {
+        return `Profile signals: currently learning = none · goal = internship interest · 2h/day · 3 weeks.\n\n` +
+          `Option A — AI engineering path → PROCEED\n` +
+          `Why: interest + demand evidence [U] align; first project possible in time box.\n` +
+          `Today: finish one tiny LLM API wrapper.\n\n` +
+          `Option B — Rust systems path → SKIP_FOR_NOW\n` +
+          `Why: no current Rust thread; switching now dilutes the internship goal. Keep Python.\n\n` +
+          `Option C — DevOps deep dive → LEARN_THEN_PROCEED\n` +
+          `Missing: Docker basics. Starter: containerise a hello API. 3 checkpoints. ESTIMATE 10 days @ 2h/day.\n\n` +
+          `Option D — Kubernetes now → NOT_NOW\n` +
+          `Gap too big for 3 weeks + laptop-only constraint.\n\n` +
+          `Rank: 1) A  2) C  3) B  4) D\n@Fact-Checker`;
+      }
+
+      if (m === "HACKATHON") {
+        return `Option A — Debate Arena on Switch → GO NOW\n` +
+          `Skills match (Discord already connected). First step today: wire Moderator prompt.\n\n` +
+          `Option B — Full RAG precedent system → GO AFTER BUILDING\n` +
+          `Missing embeddings pipeline. Build a 1-file SQLite search first. ESTIMATE 1 day.\n\n` +
+          `Option C — Self-host Switch on VPS → NOT NOW\n` +
+          `Too much ops for 1.5 days left.\n@Fact-Checker`;
+      }
+
+      // RESEARCH + PROJECT share readiness ladder
+      const timeLine =
+        `Time box: 2h/day · deadline = none → proposing deadline ESTIMATE: 6 weeks from today.\n` +
+        `Readiness: ${r.toUpperCase()}\n\n`;
+
+      if (m === "RESEARCH") {
+        if (r === "ready") {
+          return timeLine +
+            `Prereqs: ML coursework HAVE · basic PyTorch HAVE.\n` +
+            `Path: START RESEARCH NOW.\n` +
+            `Week plan: lit scan (W1–2) → candidate gap notes (W3) → tiny CPU eval (W4–6).\n` +
+            `Topic lean: CPU-friendly Bangla / low-resource evaluation suite.\n` +
+            `Candidate gap, based on 4 searches: limited laptop-only eval kits for X.\n@Fact-Checker`;
+        }
+        if (r === "partial") {
+          return timeLine +
+            `Prereqs: PyTorch PARTIAL · evaluation design MISSING.\n` +
+            `Path: LEARN THEN RESEARCH.\n` +
+            `Learn first: write a chrF scoring script on a public sample (3 checkpoints).\n` +
+            `ESTIMATE: 2 weeks @ 2h/day, then start topic work under the 6-week deadline.\n@Fact-Checker`;
+        }
+        return timeLine +
+          `Prereqs: mostly MISSING for this topic.\n` +
+          `Path: FULL PREP — do not start research claims yet.\n` +
+          `Learn plan: Python data wrangling → basic NLP → one paper-reading habit.\n` +
+          `Set deadline: ESTIMATE 10 weeks prep, then re-open topic selection.\n` +
+          `Report: readiness blockers listed; candidate topics parked.\n@Fact-Checker`;
+      }
+
+      // PROJECT
+      if (r === "ready") {
+        return timeLine +
+          `Project: student habit tracker.\n` +
+          `Path: START BUILD NOW.\n\n` +
+          `LEARN-FIRST: (none critical)\n` +
+          `LEARN-ON-THE-GO:\n` +
+          `• Auth basics while building login module\n` +
+          `• Simple charts while building streak dashboard\n` +
+          `Milestone schedule fits 2h/day for 6 weeks.\n@Fact-Checker`;
+      }
+      if (r === "partial") {
+        return timeLine +
+          `Path: LEARN THEN BUILD.\n\n` +
+          `LEARN-FIRST (blockers before code):\n` +
+          `• Git + GitHub basics\n` +
+          `• One CRUD app in your stack\n` +
+          `ESTIMATE: 9 days @ 2h/day\n\n` +
+          `LEARN-ON-THE-GO (after blockers):\n` +
+          `• DB migrations while building habits table\n` +
+          `• Deploy while shipping v0.1\n@Fact-Checker`;
+      }
+      return timeLine +
+        `Path: FULL PREP + DEADLINE — not ready to build the full app.\n\n` +
+        `LEARN-FIRST (everything foundational):\n` +
+        `• HTML/CSS/JS or chosen stack intro\n` +
+        `• One tutorial app end-to-end\n` +
+        `Set deadline: ESTIMATE 8 weeks prep, then re-plan the habit tracker.\n` +
+        `Parked build scope listed in report.\n@Fact-Checker`;
+    }
+
+    function optionsForMode() {
+      if (state.mode === "LEARNING") return ["AI engineering path", "Rust systems path"];
+      if (state.mode === "HACKATHON") return ["Debate Arena on Switch", "Incident triage pair"];
+      if (state.mode === "PROJECT") return ["Habit tracker (scoped MVP)", "Full social habit network"];
+      return ["CPU low-resource NLP eval suite", "Fine-tune small LM without GPU"];
+    }
+
+    function buildScript() {
+      const mode = state.mode;
+      const q = document.getElementById("userInput").value.trim() || MODES[mode].question;
+      const [optA, optB] = optionsForMode();
+
+      const profileExtra =
+        mode === "LEARNING"
+          ? `currently_learning: none\ninterest: AI / internships\ndemand_notes: asked (job postings [U])\n`
+          : "";
+
+      const rubric =
+        mode === "HACKATHON" ? "Switch 30 · Exec 25 · Impact 25 · Presentation 20" :
+        mode === "LEARNING" ? "Goal align 30 · Demand 25 · Curve vs time 25 · Time to first project 20" :
+        mode === "PROJECT" ? "Time feasibility 30 · Learn-first/on-go clarity 25 · Fit 25 · Scope realism 20" :
+        "Gap evidence 30 · Feasibility 25 · Interest/skill fit 25 · Novelty 20";
+
+      return [
+        { phase: 0, human: true, body: q, callout: ["You open a case", "One Discord message starts the room workflow."] },
+        {
+          phase: 1, agentId: "mod",
+          body: `Mode: **${mode}**.\n\nI need your time box and evidence (not 1–10 ratings):\n1) Goal + deadline (or say none)\n2) Hours per day available\n3) What have you built/finished with tools you know?\n4) ${mode === "LEARNING" ? "What are you currently learning (or none)?" : "Interests / domain?"}\n5) Constraints (hardware, team, budget)` +
+            (mode === "LEARNING" ? `\n6) If goal unclear: what jobs/outcomes interest you?` : ""),
+          callout: ["Moderator profiles", "LEARNING asks extra: currently learning + demand/goal alignment."]
+        },
+        {
+          phase: 1, human: true, name: "Student",
+          body: `goal: ${mode === "HACKATHON" ? "ship hackathon demo" : mode === "PROJECT" ? "ship habit tracker MVP" : mode === "RESEARCH" ? "pick thesis topic" : "internship-ready skills"}\ntime: 2h/day · deadline: none\nskills: ${state.ready === "ready" ? "working basics evidenced" : state.ready === "partial" ? "some basics, gaps remain" : "little evidenced skill"}\n${profileExtra}constraints: laptop only`,
+          callout: ["Time is first-class", "If deadline is none, Coach/Moderator must propose one (ESTIMATE)."]
+        },
+        {
+          phase: 1, agentId: "mod",
+          body: `PROFILE JSON saved (mode=${mode}). @Scout research candidates.`,
+          callout: ["Hand-off", "Agents @mention the next role by name."]
+        },
+        {
+          phase: 2, agentId: "scout",
+          body: `SOURCES\n1. [V] https://www.wemakedevs.org/hackathons/switch\n2. [V] https://docs.switchagents.ai\n3. [U] job/demand blog snippet\n\nCANDIDATES\n1. ${optA}\n2. ${optB}\n3. Runner-up archived\n\n${mode === "RESEARCH" ? "Closest related work listed; gaps marked as candidate only.\n" : ""}@Moderator`,
+          callout: ["Scout", "≤6 sources. RESEARCH never claims a confirmed gap."]
+        },
+        {
+          phase: 3, agentId: "mod",
+          body: `Debate pair:\nA → @Advocate A : ${optA}\nB → @Advocate B : ${optB}\nRound 1 openings.`,
+          callout: ["Two options", "Moderator picks best profile fits; others stay runners-up."]
+        },
+        {
+          phase: 3, agentId: "advA",
+          body: `Opening for A.\nFits time box + goal. [V] Switch/docs support agent+chat workflows.\nHonest risk: ${state.ready === "not_ready" ? "readiness gap" : "scope creep"}.\n@Moderator`,
+          callout: ["Advocate A", "Sincere case + strongest honest risk."]
+        },
+        {
+          phase: 3, agentId: "advB",
+          body: `Opening for B.\nAlternative path. Some demand claims [U].\nRisk: worse fit to hours/hardware.\n@Moderator`,
+          callout: ["Advocate B", "May concede later — honest, not hostile."]
+        },
+        {
+          phase: 4, agentId: "mod",
+          body: `@Coach produce the **${mode}** path (readiness=${state.ready}). Then Fact-Checker → Judge.`,
+          callout: ["Coach is mode-specific", "This step is what changed in the product."]
+        },
+        {
+          phase: 4, agentId: "coach",
+          body: coachBlock(),
+          callout: [
+            mode === "LEARNING" ? "Replaced LEARNING verdicts" :
+            mode === "HACKATHON" ? "HACKATHON keeps GO NOW / AFTER / NOT NOW" :
+            mode === "PROJECT" ? "PROJECT: learn-first vs learn-on-the-go" :
+            "RESEARCH readiness ladder",
+            mode === "LEARNING"
+              ? "PROCEED · SKIP_FOR_NOW · LEARN_THEN_PROCEED · NOT_NOW, then rank."
+              : mode === "PROJECT"
+              ? "Same time/readiness as RESEARCH, plus which skills attach to which build parts."
+              : mode === "RESEARCH"
+              ? "Ready → start · Partial → learn then start · Not ready → full plan + deadline."
+              : "Feasibility + Switch fit dominate."
+          ]
+        },
+        {
+          phase: 5, agentId: "fact",
+          body: `CLAIM | RESULT | NOTE\nSwitch centrality | Verified | hackathon page\nDemand snippet | Unverified | blog\nDead link sample | Dead link | example.invalid\n\nCounts: V2 · U1 · C0 · Dead1\n@Judge`,
+          callout: ["Fact-Checker", "Labels + counts; backs tools/verify_sources.py."]
+        },
+        {
+          phase: 6, agentId: "judge",
+          body: `Rubric (${mode}): ${rubric}\n\nA weighted ahead of B.\nCONFIDENCE: medium\nWHAT WOULD CHANGE THIS: more skill evidence or a hard deadline.\nI do not vote. @Moderator`,
+          callout: ["Judge ≠ decider", "Scores only; humans vote."]
+        },
+        {
+          phase: 7, agentId: "mod",
+          body: `FINAL REPORT (draft)\nMode: ${mode} | Readiness: ${state.ready}\nA: ${optA}\nB: ${optB}\nCoach path + fact-check counts included.\nLimitations: opinions ≠ facts; research gaps are candidates; times are ESTIMATE.\n\nVote: **A**, **B**, or **MORE INFO**.`,
+          callout: ["Your decision", "Vote below — same as Discord majority vote."],
+          showVote: true
+        },
+      ];
+    }
+
+    function resetChat() {
+      clearInterval(state.autoTimer);
+      state.autoTimer = null;
+      state.step = -1;
+      state.script = [];
+      chatEl.innerHTML = "";
+      votePanel.classList.remove("show");
+      document.getElementById("btnStep").disabled = true;
+      document.getElementById("btnAuto").disabled = true;
+      progressEl.textContent = "Idle";
+      renderPhases(-1);
+      renderAgents(null);
+      setCallout("How to use", "Pick a mode (and readiness for RESEARCH/PROJECT). Press <em>Start case</em>, then step or auto-play. Compare LEARNING vs PROJECT vs RESEARCH Coach messages — that is the product difference.");
+    }
+
+    function startCase() {
+      resetChat();
+      state.script = buildScript();
+      document.getElementById("btnStep").disabled = false;
+      document.getElementById("btnAuto").disabled = false;
+      stepOnce();
+    }
+
+    function stepOnce() {
+      if (state.step >= state.script.length - 1) {
+        progressEl.textContent = "Complete — vote if shown";
+        document.getElementById("btnStep").disabled = true;
+        return;
+      }
+      state.step += 1;
+      const s = state.script[state.step];
+      addMsg(s);
+      renderPhases(s.phase);
+      if (s.callout) setCallout(s.callout[0], s.callout[1]);
+      if (s.showVote) votePanel.classList.add("show");
+      progressEl.textContent = `${state.step + 1} / ${state.script.length}`;
+    }
+
+    function finishVote(v) {
+      votePanel.classList.remove("show");
+      addMsg({
+        agentId: "mod",
+        body: `SIMULATED vote: **${v}**. No report was saved and no agent was contacted.\n${v === 'MORE INFO' ? 'In the intended workflow, the first ballot triggers one focused evidence pass and a second ballot.' : 'In a real case, the case owner closes the ballot and the Moderator counts verified human votes.'}`
+      });
+      renderPhases(8);
+      setCallout("Simulation", "This scripted preview does not run agents, conduct research, count real votes or save a report.");
+      progressEl.textContent = "Done";
+      document.getElementById("btnStep").disabled = true;
+      clearInterval(state.autoTimer);
+    }
+
+    document.querySelectorAll(".ready-btn").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".ready-btn").forEach((b) => b.classList.remove("active"));
+        btn.classList.add("active");
+        state.ready = btn.dataset.ready;
+      });
+    });
+
+    document.querySelectorAll(".feature-btn").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const map = {
+          time: "Every RESEARCH/PROJECT case checks hours/day. If the student gives no deadline, Coach proposes one and labels it ESTIMATE.",
+          learn: "LEARNING no longer uses GO NOW/AFTER/NOT NOW. It uses PROCEED, SKIP_FOR_NOW (keep existing focus), LEARN_THEN_PROCEED, and NOT_NOW — then ranks.",
+          project: "PROJECT copies RESEARCH readiness, then splits skills into learn-first blockers vs learn-on-the-go tied to project parts (e.g. auth while building login).",
+          hack: "HACKATHON stays on the original Switch judging rubric and the old Coach triple: GO NOW / GO AFTER BUILDING / NOT NOW.",
+        };
+        tipText.textContent = map[btn.dataset.f];
+        tip.classList.add("show");
+      });
+    });
+
+    document.getElementById("tipClose").addEventListener("click", () => tip.classList.remove("show"));
+    document.getElementById("btnStart").addEventListener("click", startCase);
+    document.getElementById("btnStep").addEventListener("click", stepOnce);
+    document.getElementById("btnAuto").addEventListener("click", () => {
+      clearInterval(state.autoTimer);
+      state.autoTimer = setInterval(() => {
+        if (state.step >= state.script.length - 1) { clearInterval(state.autoTimer); return; }
+        stepOnce();
+      }, 1000);
+    });
+    document.getElementById("btnReset").addEventListener("click", resetChat);
+    document.querySelectorAll("[data-vote]").forEach((b) => b.addEventListener("click", () => finishVote(b.dataset.vote)));
+
+    renderModes();
+    updateGuide();
+    renderAgents(null);
+    renderPhases(-1);
+    document.getElementById("userInput").placeholder = MODES.LEARNING.question;
+  </script>
+</body>
+</html>
