@@ -1,51 +1,122 @@
-# Debate Arena (working name)
+# Debate Arena
 
-Use Debate Arena to compare hackathon ideas, projects, learning paths, or research topics in Discord. The agents debate two options, assess readiness, check evidence, and rank the options. Group members can share attributed opinions and evidence before the debate; humans make the decision.
+**Make better team decisions in Discord.** Bring a question and your constraints. Seven AI agents research two options, challenge each other's reasoning, and recommend a path. Your team can ask for more evidence and makes the final call by voting.
 
-## How Switch is used
-Switch bridges the existing Discord channel to a room. Each of the seven roles runs as a Switch agent; Switch routes the named handoffs and messages. The checked team setup used Codex on the host Mac. The prompts and rubric are separate from the model, but this repository does not yet include its own model API adapter. See [provider setup and limits](docs/PROVIDERS.md).
+[Try the preview](#try-the-preview) · [Demo video](#demo-video) · [Run in Discord](#run-in-discord) · [Start a decision](#start-a-decision)
 
-## Clone and run the local checks
+We built Debate Arena for the Flip the Switch Hackathon after our team kept going in circles about what to build. We wanted to see what each idea had going for it, which assumptions needed checking, and what would make us change our minds. [Read the build story on Medium.](https://medium.com/@pranjoy822/we-argued-too-much-so-we-built-an-ai-agent-to-argue-for-us-74aa6921a326)
 
-The Python utilities use only the Python standard library. No third-party Python packages or paid API key are required for the local vote-tally and URL-check tools.
+## Demo video
+
+**YouTube walkthrough coming soon.** Follow a decision from the first Discord message through agent handoffs, a recommendation, and the human vote.
+
+<!-- When the video is published, replace the placeholder above with a [Watch the demo on YouTube] link to the video. -->
+
+## Try the preview
+
+The interactive preview runs in your browser using scripted examples. You can compare options, try **More info**, and see how the final report is laid out. It requires no Discord account, server, or model credentials.
 
 ```sh
-git clone <repository-url>
-cd debate-arena
-python3 -m unittest discover -s tests
-python3 tools/verify_sources.py --file reports/<case-id>.md
+git clone https://github.com/PhantomX-13/Debate-Arena.git
+cd Debate-Arena
 ```
 
-The standalone text client in `tools/model_provider.py` can also check an OpenAI-compatible endpoint. Set `DEBATE_ARENA_BASE_URL` and `DEBATE_ARENA_MODEL`, add `DEBATE_ARENA_API_KEY` only if the endpoint requires it, then run `python3 tools/model_provider.py "Reply with one sentence."`. This client does not run the Discord debate workflow; see [provider limits](docs/PROVIDERS.md).
+You can also use **Code → Download ZIP** and extract the files. Open [`feedback-preview.html`](feedback-preview.html) from the downloaded folder in your browser. Pick a mode, then step through a sample decision.
 
-To run the full Discord workflow, install Switch Console, connect a Discord bot/room, and create the agents from a template. The verified template uses Codex. For model choice through OpenCode, install OpenCode and its Switch connector, then import `switch/templates/debate-arena-opencode.template.yaml` and configure your model in OpenCode. A local model can avoid per-request API fees when a compatible server and sufficient hardware are available. The OpenCode template has not yet been verified in the team Discord room. See [provider setup and limits](docs/PROVIDERS.md).
+## What you can decide
 
-For the example local setup, install Ollama, run `ollama pull gemma3:4b`, copy `switch/opencode.local.example.jsonc` to `~/.config/opencode/opencode.json`, then use the OpenCode template. This requires no model API key, but the model runs on your own hardware. Run the handoff and complete-case checks in the provider guide before relying on it.
+| Mode | Example question | What the agents compare |
+| --- | --- | --- |
+| Learning | Should I learn Rust now or deepen my Python skills first? | Fit with your goal, learning curve, and time to a first project |
+| Project | Should I build a budget tracker or a study planner for my portfolio? | Value, fit with your skills, and scope you can finish |
+| Hackathon | Which prototype can our team build and demo this weekend? | Execution, originality, impact, and the event's judging criteria |
+| Research | Which research direction can I investigate with the data I have? | Evidence of a gap, novelty, available resources, and feasibility |
 
-## Existing Discord setup
+[See the scoring criteria for each mode.](rubrics/rubrics.yaml)
 
-1. Open the installed Switch Console from Applications. If the Local Switch server shows **Not running**, select **Start** and wait for **Running**.
-2. In **Templates → Import template**, choose the [Debate Arena template](switch/templates/debate-arena.template.yaml). Save it privately, choose **Use template**, select **This computer**, and create the seven agents.
-3. From each agent’s **Agent settings → Add to room**, select **general · Discord** on the **Astralis Discord** bridge. Verify the agents under **Your Rooms → Astralis Discord → #general → Configuration → Participants**. Reuse the room and bridge.
-4. In the Moderator’s **Agent settings → Who can talk to your agent → Custom rules**, edit the existing owner and owned-agent rule. Set **Rooms → Specific → general** first. Confirm the room is selected, then set **Users → Any** and keep **Agents → My agents**. Apply the rule. Any human who can join that Discord channel can then address the Moderator there. On a room with a wider audience, use explicit teammate identities. The six specialists use **Me and my agents** so the Moderator can reach them by name.
-5. In `#general`, have each teammate select `@debate-moderator` from mention suggestions and send `DA-ACCESS`. Each account should receive `DA-ACCESS-OK`. This check does not open a case.
+## How it works
 
-If the room picker does not accept input, the Switch admin can use `!invite-agent @agent-name` in the target channel for each existing agent. Use `!list-agents` or the Console’s **Participants** view to check membership. After the Moderator has replied successfully in Discord, use `!remove-agent @astralis` to take the old Cursor agent out of this room.
+```mermaid
+flowchart LR
+    discord["Discord channel"] <--> bridge["Switch Discord bridge"]
+    bridge <--> room["Switch room"]
+    room <--> agents["Seven Switch-managed agents"]
+```
 
-See the [verification log](docs/RESULTS.md) for the live deployment status and any remaining access checks.
+Switch connects the Discord channel to a room and routes replies and named handoffs. Each agent has its own instructions and receives the relevant decision context. All seven roles in the tested setup use the same agent provider, Codex.
 
-## Start a case and vote
+| Agent | Responsibility |
+| --- | --- |
+| Moderator | Collects your context, runs the discussion, opens voting, and publishes the result. |
+| Scout | Researches the options and brings back sources. |
+| Advocate A | Makes the case for Option A and responds to objections. |
+| Advocate B | Makes the case for Option B and responds to objections. |
+| Coach | Checks what each option requires and whether it fits your time and experience. |
+| Fact-Checker | Checks whether cited sources support the claims and flags gaps. |
+| Judge | Scores both options with the mode's rubric and explains its recommendation and uncertainty. |
 
-Tag `@debate-moderator` with a mode and your question. For example, `@debate-moderator LEARNING Should I keep learning Python or start Rust?` Include your goal, hours per day, deadline or none, examples of what you can already do, and constraints. For Learning, include what you currently study. For Project, include your proposed idea if you have one.
+## Run in Discord
 
-After the Moderator presents the two options, anyone can mention it to share an opinion or source about either option. The Moderator credits contributors and asks the Fact-Checker to check factual claims where possible. When the group is ready, the person who started the decision mentions the Moderator and says **Start**.
+You need a machine running Switch Console, a working Codex sign-in on that machine, and a Discord server and text channel you can administer or have an admin connect for you. Teammates interact in Discord once the room is ready.
 
-When voting opens, mention the Moderator and say **Option A**, **Option B**, or **More info**. The person who started the decision mentions the Moderator and says **Close** to end voting. Each verified human's latest valid vote in that round counts once. The Moderator posts the tally and gives the result. The default report folder is `reports/` within the Moderator’s configured working directory on the host. If writing is unavailable, the Moderator posts the report in Discord.
+1. Download [Switch Console](https://github.com/sandbox-quantum/switch/releases/latest), start a local Switch server, and open **Settings → Agent providers → Codex**. Install or detect the provider, connect it to Switch if prompted, and sign in on the machine running the agents. [Switch setup guide.](https://www.switchagents.ai/blog-posts/switch-getting-started)
+2. Connect your Discord server as a messaging app in Switch Console. Confirm that your target Discord text channel appears as a bridged room.
+3. Under **Templates → Import template**, select [`debate-arena.template.yaml`](switch/templates/debate-arena.template.yaml) from your downloaded copy. Use the template to create the seven agents on **This computer**.
+4. Open **Agent settings → Add to room** for each agent and select the bridged Discord room. Check the room's **Configuration → Participants** for all seven agents.
+5. Under **Who can talk to your agent**, set the Moderator's **Custom rules** to allow your teammates and **My agents** in that specific room. Set the six specialists to **Me and my agents** so the Moderator can hand off work.
+6. Ask each teammate to select **@debate-moderator** from Discord's mention list and send `DA-ACCESS`. A reply of `DA-ACCESS-OK` confirms access without starting a decision.
 
-**Session 3 status:** live Discord cases verified both final outcomes: an A/B choice after one MORE INFO pass (`DA-7F07-L5`) and a PENDING result after the second round also returned MORE INFO (`DA-7F07-L6`). A teammate also ran and retrieved a report in `DA-7F07-L7`. The latest Project case (`DA-7F07-P1`) exercised the optional group-input invitation, the short answer plus detailed review, and one MORE INFO follow-up. No teammate submitted optional contributions in that case; its final round still needs the Moderator to acknowledge the owner's posted `CLOSE` and save the final report. See [the verification log](docs/RESULTS.md). No agent votes count.
+If the reply never arrives, check that the Moderator is in the bridged room and that the sender is allowed to address it there. If the reply reports a provider error, check the sign-in on the agent's execution machine. The [verification log](docs/RESULTS.md) includes a two-agent handoff test for checking the bridge and agent routing before trying a full decision.
 
-## Verify sources
-Run `python3 tools/verify_sources.py --file <path-to-report.md>` from the project directory to check URL reachability. The Fact-Checker evaluates whether a source supports its claim.
+The repo also includes an OpenCode template for exploring other models. The live Discord tests used Codex. See the [provider guide](docs/PROVIDERS.md) for local model requirements and checks for other providers.
 
-## Limits (be honest)
-Research gaps are candidates. Time estimates are labeled. The human-readable first-page summary is followed by a detailed review for teammates. The persona checks are defined in [the evaluation protocol](tests/EVAL.md).
+## Start a decision
+
+Select the Moderator from Discord's mention list and send a message like this:
+
+```text
+@debate-moderator LEARNING
+
+Should I start Rust or deepen my Python backend skills first?
+I want to prepare for a backend internship in 10 weeks. I have one hour
+per day, know basic Python and Git, and have built a small Flask API.
+I’m currently learning Python and have a laptop but no budget for courses.
+```
+
+Include your mode, question, goal, time per day, deadline if you have one, experience, and constraints. For **Learning**, say what you currently study. For **Project**, include any idea you already have. The workflow runs one active decision per room.
+
+1. **Share your perspective.** The Moderator confirms two options. Anyone can mention it with an opinion, reason, or source. When the group is ready, the person who started the decision mentions it and says **Start**.
+2. **Read the recommendation.** The agents debate both options and check the evidence. The Moderator shares the Judge's recommendation and a detailed review of the arguments, sources, and uncertainties.
+3. **Vote when the ballot opens.** Mention the Moderator and say **Option A**, **Option B**, or **More info**. Each person's latest valid vote counts once per round. The person who started the decision mentions the Moderator and says **Close** to end voting.
+4. **Ask for more evidence if needed.** If neither option wins a majority in the first ballot, the Moderator asks a focused follow-up question. The agents revisit the same two options and open one more ballot. If neither wins a majority then, the decision stays pending and the report explains what evidence is still missing.
+
+The final Markdown report records the recommendation, sources, uncertainties, and human vote. The Moderator saves it under `reports/` in its configured working directory when available and shares it in the room. [See the report template.](reports/TEMPLATE.md)
+
+## Project status
+
+Live Discord tests exercised all four modes, named agent handoffs, teammate voting, and report delivery. The team also observed both outcomes after **More info**: a choice after the second ballot and a decision left pending. Some runs required retries or manual steps. [See what was verified and what remains open.](docs/RESULTS.md)
+
+## Repository guide
+
+| Path | What's inside |
+| --- | --- |
+| [`switch/templates/`](switch/templates/) | Switch templates for the seven agents and their instructions |
+| [`rubrics/`](rubrics/) | Scoring criteria for each decision mode |
+| [`reports/`](reports/) | The Markdown report template |
+| [`tools/`](tools/) | Vote tallying, URL checks, and a standalone model connectivity check |
+| [`tests/EVAL.md`](tests/EVAL.md) | Evaluation scenarios and expected behavior |
+| [`docs/DEMO.md`](docs/DEMO.md) | Demo walkthrough |
+
+Run the local checks from the repository root with Python 3. The tests and utilities use the Python standard library.
+
+```sh
+python3 -m unittest discover -s tests
+```
+
+To check whether URLs in a saved report are reachable, run `python3 tools/verify_sources.py --file path/to/report.md` with your report path. The Fact-Checker evaluates whether a source supports a claim.
+
+## Feedback
+
+If you try Debate Arena, share your decision mode, what you expected, and what happened in a [GitHub issue](https://github.com/PhantomX-13/Debate-Arena/issues).
+
+This repository currently has no license file.
