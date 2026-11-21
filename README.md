@@ -8,9 +8,7 @@ We built Debate Arena for the Flip the Switch Hackathon after our team kept goin
 
 ## Demo video
 
-**YouTube walkthrough coming soon.** Follow a decision from the first Discord message through agent handoffs, a recommendation, and the human vote.
-
-<!-- When the video is published, replace the placeholder above with a [Watch the demo on YouTube] link to the video. -->
+**[Watch the Debate Arena demo on YouTube](https://youtu.be/rPcgJqYMs3o).** Follow a decision from the first Discord message through agent handoffs, a recommendation, and the human vote.
 
 ## Try the preview
 
